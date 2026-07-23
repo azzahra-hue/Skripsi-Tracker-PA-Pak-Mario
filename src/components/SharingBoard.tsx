@@ -108,8 +108,8 @@ export function SharingBoard({ currentUser, onRequireAuth }: SharingBoardProps) 
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[500px]">
-      <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+    <div className="bg-gradient-to-bl from-white to-orange-50/50 rounded-2xl shadow-sm border border-orange-100 overflow-hidden flex flex-col h-[500px]">
+      <div className="p-4 border-b border-orange-100 bg-white/50 flex items-center justify-between">
         <h3 className="font-bold text-gray-800 flex items-center gap-2">
           <MessageSquare className="w-5 h-5 text-orange-500" />
           Sharing Info & Catatan
@@ -161,7 +161,7 @@ export function SharingBoard({ currentUser, onRequireAuth }: SharingBoardProps) 
               </div>
               
               {note.text && (
-                <div className="bg-gray-50 p-3 rounded-2xl rounded-tl-sm border border-gray-100">
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 p-3 rounded-2xl rounded-tl-sm border border-gray-100">
                   <p className="text-gray-800 text-sm whitespace-pre-wrap font-medium">{note.text}</p>
                 </div>
               )}
@@ -170,7 +170,7 @@ export function SharingBoard({ currentUser, onRequireAuth }: SharingBoardProps) 
                 <a
                   href={note.fileData}
                   download={note.fileName}
-                  className="mt-3 flex items-center gap-3 p-3 rounded-2xl rounded-tl-sm border border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors group cursor-pointer shadow-sm"
+                  className="mt-3 flex items-center gap-3 p-3 rounded-2xl rounded-tl-sm border border-orange-100 bg-white/50 hover:bg-gray-100 transition-colors group cursor-pointer shadow-sm"
                 >
                   <div className="bg-white p-2 rounded-md shadow-sm">
                     <File className="w-5 h-5 text-orange-500" />

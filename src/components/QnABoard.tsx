@@ -125,8 +125,8 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[500px]">
-      <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+    <div className="bg-gradient-to-br from-white to-orange-50/50 rounded-2xl shadow-sm border border-orange-100 overflow-hidden flex flex-col h-[500px]">
+      <div className="p-4 border-b border-orange-100 bg-white/50 flex items-center justify-between">
         <h3 className="font-bold text-gray-800 flex items-center gap-2">
           <HelpCircle className="w-5 h-5 text-orange-500" />
           Tanya Jawab (Q&A)
@@ -182,7 +182,7 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
                     )}
                   </div>
                   
-                  <div className="bg-gray-50 p-3 rounded-2xl rounded-tl-sm border border-gray-100">
+                  <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 p-3 rounded-2xl rounded-tl-sm border border-gray-100">
                     <p className="text-sm whitespace-pre-wrap font-medium">{q.text}</p>
                   </div>
                   
@@ -224,7 +224,7 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
                                   )}
                                 </div>
                               </div>
-                              <div className="bg-white p-3 rounded-2xl rounded-tl-sm border border-gray-100 shadow-sm">
+                              <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 p-3 rounded-2xl rounded-tl-sm border border-gray-100 shadow-sm">
                                 <p className="text-sm text-gray-800 whitespace-pre-wrap">{ans.text}</p>
                               </div>
                             </div>
