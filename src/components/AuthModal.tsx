@@ -2,7 +2,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { AppUser } from '../types';
-import { X, Loader2, User as UserIcon, Lock } from 'lucide-react';
+import { X, Loader2, User as UserIcon, Lock, Eye, EyeOff } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -16,6 +16,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', initialName 
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [name, setName] = useState(initialName);
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -119,7 +120,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', initialName 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
-                  placeholder="Masukkan nama Anda"
+                  placeholder="Contoh: Maung Tekpend"
                   required
                 />
               </div>
@@ -130,16 +131,23 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', initialName 
               <div className="relative">
                 <Lock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   inputMode="numeric"
                   pattern="[0-9]*"
                   value={password}
                   onChange={(e) => setPassword(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+                  className="w-full pl-10 pr-12 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
                   placeholder="Masukkan 6 digit angka"
                   required
                   minLength={6}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 

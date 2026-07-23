@@ -15,7 +15,7 @@ interface ProposalModalProps {
   onRequireAuth?: (name?: string) => void;
 }
 
-const statusOptions: Status[] = ['To-Do', 'On Progress', 'Done'];
+const statusOptions: Status[] = ['To-Do', 'On Progress', 'Revisi', 'Done'];
 
 export function ProposalModal({ proposal, isOpen, onClose, currentUser, isNew = false, onRequireAuth }: ProposalModalProps) {
   const [isEditing, setIsEditing] = useState(isNew);

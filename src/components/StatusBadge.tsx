@@ -5,6 +5,7 @@ export function StatusBadge({ status }: { status: Status }) {
   const colors = {
     'To-Do': 'bg-gray-100 text-gray-700 border-gray-200',
     'On Progress': 'bg-orange-100 text-orange-700 border-orange-200',
+    'Revisi': 'bg-red-100 text-red-700 border-red-200',
     'Done': 'bg-green-100 text-green-700 border-green-200',
   };
 

@@ -7,7 +7,7 @@ import { AuthModal } from './components/AuthModal';
 import { AuthScreen } from './components/AuthScreen';
 import { ProposalModal } from './components/ProposalModal';
 import { StatusBadge } from './components/StatusBadge';
-import { Plus, Search, FileSpreadsheet, Eye } from 'lucide-react';
+import { Plus, Search, FileSpreadsheet, Eye, ArrowUpDown } from 'lucide-react';
 
 export default function App() {
   const [user, setUser] = useState<AppUser | null>(() => {
@@ -18,6 +18,7 @@ export default function App() {
 
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'progress'>('name');
   
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,11 +57,27 @@ export default function App() {
     );
   }
 
+  const getProgressScore = (p: Proposal) => {
+    const score = (status: Status) => {
+      if (status === 'Done') return 3;
+      if (status === 'Revisi') return 2;
+      if (status === 'On Progress') return 1;
+      return 0;
+    };
+    return score(p.chapter1) + score(p.chapter2) + score(p.chapter3);
+  };
+
   const filteredProposals = proposals.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.method?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ).sort((a, b) => {
+    if (sortBy === 'name') {
+      return a.name.localeCompare(b.name);
+    } else {
+      return getProgressScore(b) - getProgressScore(a);
+    }
+  });
 
   const handleOpenNew = () => {
     if (!user) {
@@ -91,7 +108,7 @@ export default function App() {
               <FileSpreadsheet className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">SkripsiTracker</h1>
+              <h1 className="text-xl font-bold text-gray-900">Skripsi Tracker</h1>
               <p className="text-xs text-gray-500 font-medium">Monitoring Progress Proposal Skripsi</p>
             </div>
           </div>
@@ -102,15 +119,28 @@ export default function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white">
-            <div className="relative max-w-md w-full">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Cari nama, topik, atau metode..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-              />
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto flex-1">
+              <div className="relative max-w-md w-full">
+                <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input 
+                  type="text" 
+                  placeholder="Cari nama, topik, atau metode..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                />
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <ArrowUpDown className="w-5 h-5 text-gray-400" />
+                <select 
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'name' | 'progress')}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2 outline-none transition-all"
+                >
+                  <option value="name">Urutkan: A - Z</option>
+                  <option value="progress">Urutkan: Progress Terbanyak</option>
+                </select>
+              </div>
             </div>
             <button
               onClick={handleOpenNew}

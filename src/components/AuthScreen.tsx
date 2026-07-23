@@ -2,7 +2,7 @@ import { useState, FormEvent } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { AppUser } from '../types';
-import { Loader2, User as UserIcon, Lock, FileSpreadsheet, ArrowRight } from 'lucide-react';
+import { Loader2, User as UserIcon, Lock, FileSpreadsheet, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -10,6 +10,7 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -82,7 +83,7 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
               <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm shadow-sm">
                 <FileSpreadsheet className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight">SkripsiTracker</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Skripsi Tracker</h1>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-6">
               Pantau Progress Skripsi Lebih Mudah
@@ -153,7 +154,7 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                        placeholder="Contoh: Budi Santoso"
+                        placeholder="Contoh: Maung Tekpend"
                         required
                       />
                     </div>
@@ -164,16 +165,23 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
                     <div className="relative">
                       <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         inputMode="numeric"
                         pattern="[0-9]*"
                         value={password}
                         onChange={(e) => setPassword(e.target.value.replace(/[^0-9]/g, ''))}
-                        className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                        className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                         placeholder="Masukkan 6 digit angka"
                         required
                         minLength={6}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
                     </div>
                   </div>
 

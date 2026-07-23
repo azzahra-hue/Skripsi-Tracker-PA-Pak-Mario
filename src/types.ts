@@ -1,4 +1,4 @@
-export type Status = 'To-Do' | 'On Progress' | 'Done';
+export type Status = 'To-Do' | 'On Progress' | 'Revisi' | 'Done';
 
 export interface AppUser {
   uid: string;
