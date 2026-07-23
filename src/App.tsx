@@ -1,0 +1,208 @@
+import { useState, useEffect } from 'react';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from './lib/firebase';
+import { AppUser, Proposal, Status } from './types';
+import { AuthButton } from './components/AuthButton';
+import { AuthModal } from './components/AuthModal';
+import { AuthScreen } from './components/AuthScreen';
+import { ProposalModal } from './components/ProposalModal';
+import { StatusBadge } from './components/StatusBadge';
+import { Plus, Search, FileSpreadsheet, Eye } from 'lucide-react';
+
+export default function App() {
+  const [user, setUser] = useState<AppUser | null>(() => {
+    const saved = localStorage.getItem('skripsi_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [isGuest, setIsGuest] = useState(false);
+
+  const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewProposal, setIsNewProposal] = useState(false);
+  
+  const [authModal, setAuthModal] = useState<{isOpen: boolean, mode: 'login' | 'register', name: string}>({isOpen: false, mode: 'login', name: ''});
+
+  const handleAuthSuccess = (loggedInUser: AppUser) => {
+    setUser(loggedInUser);
+    localStorage.setItem('skripsi_user', JSON.stringify(loggedInUser));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setIsGuest(false);
+    localStorage.removeItem('skripsi_user');
+  };
+
+  useEffect(() => {
+    const q = query(collection(db, 'proposals'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => doc.data() as Proposal);
+      setProposals(data);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (!user && !isGuest) {
+    return (
+      <AuthScreen 
+        onSuccess={(loggedInUser) => {
+          handleAuthSuccess(loggedInUser);
+        }} 
+        onGuest={() => setIsGuest(true)} 
+      />
+    );
+  }
+
+  const filteredProposals = proposals.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    p.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.method?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleOpenNew = () => {
+    if (!user) {
+      setAuthModal({ isOpen: true, mode: 'register', name: '' });
+      return;
+    }
+    setSelectedProposal(null);
+    setIsNewProposal(true);
+    setIsModalOpen(true);
+  };
+
+  const handleRequireAuth = (name?: string) => {
+    setAuthModal({ isOpen: true, mode: 'login', name: name || '' });
+  };
+
+  const handleOpenView = (proposal: Proposal) => {
+    setSelectedProposal(proposal);
+    setIsNewProposal(false);
+    setIsModalOpen(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-orange-500 p-2 rounded-lg">
+              <FileSpreadsheet className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">SkripsiTracker</h1>
+              <p className="text-xs text-gray-500 font-medium">Monitoring Progress Proposal Skripsi</p>
+            </div>
+          </div>
+          <AuthButton user={user} onLoginClick={() => setAuthModal({isOpen: true, mode: 'login', name: ''})} onLogout={handleLogout} />
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white">
+            <div className="relative max-w-md w-full">
+              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input 
+                type="text" 
+                placeholder="Cari nama, topik, atau metode..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              />
+            </div>
+            <button
+              onClick={handleOpenNew}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium shadow-sm whitespace-nowrap"
+            >
+              <Plus className="w-5 h-5" />
+              Tambah Proposal
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                  <th className="px-6 py-4 font-semibold border-b border-gray-200">Mahasiswa</th>
+                  <th className="px-6 py-4 font-semibold border-b border-gray-200">Topik</th>
+                  <th className="px-6 py-4 font-semibold border-b border-gray-200">Metode</th>
+                  <th className="px-6 py-4 font-semibold border-b border-gray-200 text-center">Bab 1</th>
+                  <th className="px-6 py-4 font-semibold border-b border-gray-200 text-center">Bab 2</th>
+                  <th className="px-6 py-4 font-semibold border-b border-gray-200 text-center">Bab 3</th>
+                  <th className="px-6 py-4 font-semibold border-b border-gray-200 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredProposals.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                      <div className="flex flex-col items-center justify-center">
+                        <FileSpreadsheet className="w-12 h-12 text-gray-300 mb-3" />
+                        <p className="text-base font-medium text-gray-900">Belum ada data</p>
+                        <p className="text-sm">Jadilah yang pertama menambahkan progress skripsi Anda.</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredProposals.map((proposal) => (
+                    <tr key={proposal.id} className="hover:bg-gray-50/50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-gray-900">{proposal.name}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                          {proposal.topic || '-'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center text-sm text-gray-600">
+                          {proposal.method || '-'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <StatusBadge status={proposal.chapter1} />
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <StatusBadge status={proposal.chapter2} />
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <StatusBadge status={proposal.chapter3} />
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => handleOpenView(proposal)}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-md transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                          Detail
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      <ProposalModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        proposal={selectedProposal}
+        isNew={isNewProposal}
+        currentUser={user}
+        onRequireAuth={handleRequireAuth}
+      />
+      <AuthModal
+        isOpen={authModal.isOpen}
+        onClose={() => setAuthModal(prev => ({...prev, isOpen: false}))}
+        initialMode={authModal.mode}
+        initialName={authModal.name}
+        onSuccess={handleAuthSuccess}
+      />
+    </div>
+  );
+}
