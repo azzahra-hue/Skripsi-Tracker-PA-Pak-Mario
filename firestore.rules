@@ -19,5 +19,14 @@ service cloud.firestore {
     match /answers/{answerId} {
       allow read, write: if true;
     }
+    match /user_targets/{targetId} {
+      allow read, write: if true;
+    }
+    match /mentoring_targets/{targetId} {
+      allow read, write: if true;
+    }
+    match /progress_logs/{logId} {
+      allow read, write: if true;
+    }
   }
 }

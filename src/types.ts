@@ -47,3 +47,36 @@ export interface Answer {
   authorId: string;
   createdAt: number;
 }
+
+export interface ChapterTarget {
+  id: string;
+  userId: string;
+  chapterKey: string; // 'chapter1' | 'chapter2' | 'chapter3' | 'chapter4' | 'chapter5' | 'sempro' | 'sidang'
+  chapterTitle: string; // e.g., "Bab 1: Pendahuluan"
+  status: Status;
+  targetDate: string; // YYYY-MM-DD
+  notes?: string;
+  updatedAt: number;
+}
+
+export interface MentoringTarget {
+  id: string;
+  userId: string;
+  title: string; // e.g. "Bimbingan Bab 1-2 & Instrumen"
+  dosen: string; // e.g. "Dosen Pembimbing 1"
+  targetDate: string; // YYYY-MM-DD
+  status: 'Terjadwal' | 'Selesai' | 'Perlu Revisi';
+  notes?: string;
+  createdAt: number;
+}
+
+export interface ProgressLog {
+  id: string;
+  userId: string;
+  title: string;
+  date: string;
+  category: 'Bab' | 'Bimbingan' | 'Sempro' | 'Sidang' | 'Lainnya';
+  notes?: string;
+  createdAt: number;
+}
+
