@@ -7,7 +7,16 @@ import { AuthModal } from './components/AuthModal';
 import { AuthScreen } from './components/AuthScreen';
 import { ProposalModal } from './components/ProposalModal';
 import { StatusBadge } from './components/StatusBadge';
-import { Plus, Search, FileSpreadsheet, Eye, ArrowUpDown } from 'lucide-react';
+import { Plus, Search, FileSpreadsheet, Eye, ArrowUpDown, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+
+const MOTIVATION_QUOTES = [
+  "Mantap! Satu langkah lebih dekat menuju wisuda. 🎓",
+  "Kerja bagus! Revisi bukan berarti gagal, tapi proses menuju sempurna. ✨",
+  "Semangat! Skripsi yang baik adalah skripsi yang selesai. 🚀",
+  "Yey! Progress tersimpan. Jangan lupa istirahat juga ya! ☕",
+  "Luar biasa! Sedikit demi sedikit, lama-lama jadi sarjana. 📚"
+];
 
 export default function App() {
   const [user, setUser] = useState<AppUser | null>(() => {
@@ -25,6 +34,18 @@ export default function App() {
   const [isNewProposal, setIsNewProposal] = useState(false);
   
   const [authModal, setAuthModal] = useState<{isOpen: boolean, mode: 'login' | 'register', name: string}>({isOpen: false, mode: 'login', name: ''});
+
+  const [showMotivation, setShowMotivation] = useState(false);
+  const [motivationQuote, setMotivationQuote] = useState('');
+
+  const handleSaveSuccess = () => {
+    const randomQuote = MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)];
+    setMotivationQuote(randomQuote);
+    setShowMotivation(true);
+    setTimeout(() => {
+      setShowMotivation(false);
+    }, 4000);
+  };
 
   const handleAuthSuccess = (loggedInUser: AppUser) => {
     setUser(loggedInUser);
@@ -117,6 +138,24 @@ export default function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Motivational Header */}
+        <div className="mb-8 bg-gradient-to-r from-orange-500 to-orange-400 rounded-2xl p-6 md:p-8 text-white shadow-sm relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+          <div className="absolute bottom-0 left-10 w-40 h-40 bg-orange-600 opacity-20 rounded-full blur-2xl translate-y-1/2"></div>
+          <div className="relative z-10 max-w-2xl">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-3">
+              Yuk, berjuang bareng! <Sparkles className="w-6 h-6 text-yellow-200" />
+            </h2>
+            <p className="text-orange-50 md:text-lg leading-relaxed">
+              Setiap langkah kecil adalah progress yang berarti. Jangan menyerah, revisi adalah bagian dari proses pendewasaan akademik.
+            </p>
+          </div>
+          <div className="relative z-10 shrink-0 bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20">
+            <span className="font-bold text-white text-lg tracking-wide">#SuksesDuniaAkhirat</span>
+          </div>
+        </div>
+
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white">
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto flex-1">
@@ -225,6 +264,7 @@ export default function App() {
         isNew={isNewProposal}
         currentUser={user}
         onRequireAuth={handleRequireAuth}
+        onSaveSuccess={handleSaveSuccess}
       />
       <AuthModal
         isOpen={authModal.isOpen}
@@ -233,6 +273,25 @@ export default function App() {
         initialName={authModal.name}
         onSuccess={handleAuthSuccess}
       />
+
+      <AnimatePresence>
+        {showMotivation && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-6 right-6 z-50 bg-white border-l-4 border-orange-500 rounded-xl shadow-2xl p-5 max-w-sm"
+          >
+            <div className="flex items-start gap-3">
+              <div className="text-2xl mt-0.5">🌟</div>
+              <div>
+                <h4 className="text-sm font-bold text-gray-900 mb-1">Progress Tersimpan!</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">{motivationQuote}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

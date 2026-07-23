@@ -13,11 +13,12 @@ interface ProposalModalProps {
   currentUser: AppUser | null;
   isNew?: boolean;
   onRequireAuth?: (name?: string) => void;
+  onSaveSuccess?: () => void;
 }
 
 const statusOptions: Status[] = ['To-Do', 'On Progress', 'Revisi', 'Done'];
 
-export function ProposalModal({ proposal, isOpen, onClose, currentUser, isNew = false, onRequireAuth }: ProposalModalProps) {
+export function ProposalModal({ proposal, isOpen, onClose, currentUser, isNew = false, onRequireAuth, onSaveSuccess }: ProposalModalProps) {
   const [isEditing, setIsEditing] = useState(isNew);
   const [formData, setFormData] = useState<Partial<Proposal>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -74,6 +75,7 @@ export function ProposalModal({ proposal, isOpen, onClose, currentUser, isNew = 
         await updateDoc(doc(db, 'proposals', proposal.id), formData);
       }
       onClose();
+      onSaveSuccess?.();
     } catch (error) {
       console.error('Error saving:', error);
       alert('Gagal menyimpan data.');
