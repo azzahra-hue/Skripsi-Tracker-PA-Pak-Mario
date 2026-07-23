@@ -1,5 +1,5 @@
 {
-  "name": "SkripsiTracker",
+  "name": "Skripsi Tracker",
   "description": "A collaborative spreadsheet-like app for students to monitor and update their thesis proposal progress.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
