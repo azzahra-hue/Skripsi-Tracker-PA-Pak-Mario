@@ -19,3 +19,31 @@ export interface Proposal {
   ownerName: string;
   createdAt: number;
 }
+
+export interface Note {
+  id: string;
+  text: string;
+  author: string;
+  authorId: string;
+  createdAt: number;
+  fileName?: string;
+  fileType?: string;
+  fileData?: string;
+}
+
+export interface Question {
+  id: string;
+  text: string;
+  author: string;
+  authorId: string;
+  createdAt: number;
+}
+
+export interface Answer {
+  id: string;
+  questionId: string;
+  text: string;
+  author: string;
+  authorId: string;
+  createdAt: number;
+}

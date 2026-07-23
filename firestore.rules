@@ -10,5 +10,14 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if true;
     }
+    match /notes/{noteId} {
+      allow read, write: if true;
+    }
+    match /questions/{questionId} {
+      allow read, write: if true;
+    }
+    match /answers/{answerId} {
+      allow read, write: if true;
+    }
   }
 }

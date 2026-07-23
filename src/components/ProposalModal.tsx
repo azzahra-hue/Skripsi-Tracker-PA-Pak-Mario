@@ -22,6 +22,7 @@ export function ProposalModal({ proposal, isOpen, onClose, currentUser, isNew = 
   const [isEditing, setIsEditing] = useState(isNew);
   const [formData, setFormData] = useState<Partial<Proposal>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (proposal) {
@@ -84,10 +85,12 @@ export function ProposalModal({ proposal, isOpen, onClose, currentUser, isNew = 
     }
   };
 
-  const handleDelete = async () => {
-    if (!proposal || !window.confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+
+  const confirmDelete = async () => {
+    if (!proposal) return;
     try {
       await deleteDoc(doc(db, 'proposals', proposal.id));
+      setShowDeleteConfirm(false);
       onClose();
     } catch (error) {
       console.error('Error deleting:', error);
@@ -255,7 +258,7 @@ export function ProposalModal({ proposal, isOpen, onClose, currentUser, isNew = 
           <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-between z-10 rounded-b-2xl">
             {!isNew && isOwner ? (
               <button
-                onClick={handleDelete}
+                onClick={() => setShowDeleteConfirm(true)}
                 className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium transition-colors text-sm"
               >
                 <Trash2 className="w-4 h-4" />
@@ -289,6 +292,32 @@ export function ProposalModal({ proposal, isOpen, onClose, currentUser, isNew = 
           </div>
         )}
       </div>
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 border border-gray-100 animate-in fade-in zoom-in duration-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Konfirmasi Hapus</h3>
+            <p className="text-gray-600 text-sm mb-6">
+              Apakah Anda yakin ingin menghapus data proposal ini? 
+              Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors shadow-sm"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

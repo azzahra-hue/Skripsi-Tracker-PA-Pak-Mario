@@ -7,6 +7,8 @@ import { AuthModal } from './components/AuthModal';
 import { AuthScreen } from './components/AuthScreen';
 import { ProposalModal } from './components/ProposalModal';
 import { StatusBadge } from './components/StatusBadge';
+import { SharingBoard } from './components/SharingBoard';
+import { QnABoard } from './components/QnABoard';
 import { Plus, Search, FileSpreadsheet, Eye, ArrowUpDown, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -122,7 +124,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <header className="bg-white border-b border-orange-100 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="bg-orange-500 p-2 rounded-lg">
@@ -156,8 +158,8 @@ export default function App() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white">
+        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 overflow-hidden">
+          <div className="p-6 border-b border-orange-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white">
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto flex-1">
               <div className="relative max-w-md w-full">
                 <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -194,13 +196,13 @@ export default function App() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                  <th className="px-6 py-4 font-semibold border-b border-gray-200">Mahasiswa</th>
-                  <th className="px-6 py-4 font-semibold border-b border-gray-200">Topik</th>
-                  <th className="px-6 py-4 font-semibold border-b border-gray-200">Metode</th>
-                  <th className="px-6 py-4 font-semibold border-b border-gray-200 text-center">Bab 1</th>
-                  <th className="px-6 py-4 font-semibold border-b border-gray-200 text-center">Bab 2</th>
-                  <th className="px-6 py-4 font-semibold border-b border-gray-200 text-center">Bab 3</th>
-                  <th className="px-6 py-4 font-semibold border-b border-gray-200 text-right">Aksi</th>
+                  <th className="px-6 py-4 font-semibold border-b border-orange-100">Mahasiswa</th>
+                  <th className="px-6 py-4 font-semibold border-b border-orange-100">Topik</th>
+                  <th className="px-6 py-4 font-semibold border-b border-orange-100">Metode</th>
+                  <th className="px-6 py-4 font-semibold border-b border-orange-100 text-center">Bab 1</th>
+                  <th className="px-6 py-4 font-semibold border-b border-orange-100 text-center">Bab 2</th>
+                  <th className="px-6 py-4 font-semibold border-b border-orange-100 text-center">Bab 3</th>
+                  <th className="px-6 py-4 font-semibold border-b border-orange-100 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -216,7 +218,7 @@ export default function App() {
                   </tr>
                 ) : (
                   filteredProposals.map((proposal) => (
-                    <tr key={proposal.id} className="hover:bg-gray-50/50 transition-colors group">
+                    <tr key={proposal.id} className="hover:bg-gray-50 transition-colors group">
                       <td className="px-6 py-4">
                         <p className="font-semibold text-gray-900">{proposal.name}</p>
                       </td>
@@ -254,6 +256,11 @@ export default function App() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <SharingBoard currentUser={user} onRequireAuth={handleRequireAuth} />
+          <QnABoard currentUser={user} onRequireAuth={handleRequireAuth} />
         </div>
       </main>
 
