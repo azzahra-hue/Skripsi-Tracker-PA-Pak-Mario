@@ -281,10 +281,10 @@ export default function App() {
                                 <img
                                   src={userProfiles[proposal.ownerId]?.photoURL || proposal.ownerPhoto}
                                   alt={proposal.name}
-                                  className="w-8 h-8 rounded-full object-cover border border-orange-200 shadow-sm shrink-0"
+                                  className="w-11 h-11 rounded-full object-cover border-2 border-orange-200 shadow-sm shrink-0"
                                 />
                               ) : (
-                                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs shrink-0 shadow-sm">
+                                <div className="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-sm shrink-0 shadow-sm border border-orange-200">
                                   {proposal.name.charAt(0).toUpperCase()}
                                 </div>
                               )}

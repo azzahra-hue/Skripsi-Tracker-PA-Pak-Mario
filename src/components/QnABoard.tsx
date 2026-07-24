@@ -179,14 +179,14 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
                       {q.author === 'Anonim' || !q.authorPhoto ? (
-                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm overflow-hidden", q.author === 'Anonim' ? 'bg-gray-400' : 'bg-orange-500')}>
-                          {q.author === 'Anonim' ? <UserIcon className="w-4 h-4" /> : q.author.charAt(0).toUpperCase()}
+                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm overflow-hidden", q.author === 'Anonim' ? 'bg-gray-400' : 'bg-orange-500')}>
+                          {q.author === 'Anonim' ? <UserIcon className="w-5 h-5" /> : q.author.charAt(0).toUpperCase()}
                         </div>
                       ) : (
                         <img
                           src={q.authorPhoto}
                           alt={q.author}
-                          className="w-8 h-8 rounded-full object-cover border border-orange-200 shadow-sm shrink-0"
+                          className="w-10 h-10 rounded-full object-cover border border-orange-200 shadow-sm shrink-0"
                         />
                       )}
                       <div>

@@ -148,14 +148,14 @@ export function SharingBoard({ currentUser, onRequireAuth }: SharingBoardProps) 
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
                   {note.author === 'Anonim' || !note.authorPhoto ? (
-                    <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm overflow-hidden", note.author === 'Anonim' ? 'bg-gray-400' : 'bg-orange-500')}>
-                      {note.author === 'Anonim' ? <UserIcon className="w-4 h-4" /> : note.author.charAt(0).toUpperCase()}
+                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm overflow-hidden", note.author === 'Anonim' ? 'bg-gray-400' : 'bg-orange-500')}>
+                      {note.author === 'Anonim' ? <UserIcon className="w-5 h-5" /> : note.author.charAt(0).toUpperCase()}
                     </div>
                   ) : (
                     <img
                       src={note.authorPhoto}
                       alt={note.author}
-                      className="w-8 h-8 rounded-full object-cover border border-orange-200 shadow-sm shrink-0"
+                      className="w-10 h-10 rounded-full object-cover border border-orange-200 shadow-sm shrink-0"
                     />
                   )}
                   <div>

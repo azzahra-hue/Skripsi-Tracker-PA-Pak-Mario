@@ -458,12 +458,12 @@ export function PersonalWorkspace({ currentUser, onRequireAuth }: PersonalWorksp
       <div className="bg-gradient-to-br from-white via-orange-50/40 to-white border border-orange-100 rounded-3xl p-6 md:p-8 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {currentUser.photoURL ? (
                 <img
                   src={currentUser.photoURL}
                   alt={currentUser.displayName}
-                  className="w-7 h-7 rounded-full object-cover border border-orange-300 shadow-sm"
+                  className="w-11 h-11 rounded-full object-cover border-2 border-orange-400 shadow-sm"
                 />
               ) : null}
               <span className="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
