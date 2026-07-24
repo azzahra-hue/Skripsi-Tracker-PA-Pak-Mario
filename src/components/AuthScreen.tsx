@@ -2,7 +2,7 @@ import { useState, FormEvent, ChangeEvent } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { AppUser } from '../types';
-import { Loader2, User as UserIcon, Lock, FileSpreadsheet, ArrowRight, Eye, EyeOff, Camera, Phone } from 'lucide-react';
+import { Loader2, User as UserIcon, Lock, FileSpreadsheet, ArrowRight, Eye, EyeOff, Camera, Phone, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { resizeProfileImage } from '../lib/imageUtils';
@@ -19,6 +19,7 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
 
   const [isForgotPin, setIsForgotPin] = useState(false);
   const [forgotPinSuccess, setForgotPinSuccess] = useState('');
+  const [forgotPinWaUrl, setForgotPinWaUrl] = useState('');
 
   const handlePhotoChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -89,16 +90,29 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
     }
   };
 
+  const formatWhatsAppNumber = (rawNumber: string) => {
+    let cleaned = rawNumber.replace(/[^0-9]/g, '');
+    if (cleaned.startsWith('0')) {
+      cleaned = '62' + cleaned.slice(1);
+    }
+    return cleaned;
+  };
+
   const handleForgotPinSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       setError('Nama harus diisi untuk memulihkan PIN');
       return;
     }
+    if (!whatsappNumber.trim()) {
+      setError('Nomor WhatsApp terdaftar harus diisi untuk memulihkan PIN');
+      return;
+    }
 
     setIsLoading(true);
     setError('');
     setForgotPinSuccess('');
+    setForgotPinWaUrl('');
 
     try {
       const normalizedName = name.trim().toLowerCase();
@@ -106,23 +120,36 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
-        setError('Nama tidak ditemukan. Silakan periksa kembali.');
+        setError('Nama pengguna tidak ditemukan. Silakan periksa kembali.');
         setIsLoading(false);
         return;
       }
 
       const userData = userSnap.data();
       if (!userData.whatsappNumber) {
-        setError('Akun ini belum mendaftarkan nomor WhatsApp. Silakan hubungi Admin untuk reset PIN.');
+        setError('Akun ini belum mendaftarkan nomor WhatsApp. Silakan hubungi Admin.');
         setIsLoading(false);
         return;
       }
 
-      // Simulate sending to WA
-      setTimeout(() => {
-        setForgotPinSuccess(`Tautan pemulihan telah disimulasikan ke nomor WhatsApp Anda (${userData.whatsappNumber}). (Simulasi: PIN Anda adalah ${userData.pin})`);
+      const cleanInputPhone = formatWhatsAppNumber(whatsappNumber);
+      const cleanRegisteredPhone = formatWhatsAppNumber(userData.whatsappNumber);
+
+      if (cleanInputPhone !== cleanRegisteredPhone) {
+        setError('Nomor WhatsApp tidak cocok dengan nomor terdaftar pada akun ini.');
         setIsLoading(false);
-      }, 1500);
+        return;
+      }
+
+      const message = `Halo *${userData.name || name.trim()}*,\n\nBerikut adalah informasi PIN akun Skripsi Anda:\n\n🔑 *PIN Anda:* ${userData.pin}\n\nSilakan gunakan PIN ini untuk masuk kembali ke aplikasi. Jaga kerahasiaan PIN Anda!`;
+      const waUrl = `https://wa.me/${cleanRegisteredPhone}?text=${encodeURIComponent(message)}`;
+
+      setForgotPinWaUrl(waUrl);
+      setForgotPinSuccess(`Nomor WhatsApp terverifikasi! Tautan WhatsApp telah dibuka secara otomatis. Klik tombol hijau di bawah ini jika WhatsApp tidak terbuka otomatis.`);
+      
+      // Open WhatsApp in a new window/tab
+      window.open(waUrl, '_blank');
+      setIsLoading(false);
 
     } catch (err: any) {
       console.error(err);
@@ -219,9 +246,39 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
                 )}
 
                 {forgotPinSuccess && (
-                  <div className="mb-6 p-3 bg-emerald-50 text-emerald-800 text-sm rounded-lg border border-emerald-200 flex items-start gap-2">
-                    <span className="shrink-0 text-emerald-600 font-bold">✓</span>
-                    <span>{forgotPinSuccess}</span>
+                  <div className="mb-6 p-4 bg-emerald-50 text-emerald-800 text-sm rounded-2xl border border-emerald-200 flex flex-col gap-3 shadow-sm">
+                    <div className="flex items-start gap-2.5">
+                      <span className="shrink-0 text-emerald-600 font-bold text-base mt-0.5">✓</span>
+                      <div>
+                        <h4 className="font-bold text-emerald-900 text-sm">Verifikasi Berhasil!</h4>
+                        <p className="text-xs text-emerald-700 leading-relaxed mt-0.5">{forgotPinSuccess}</p>
+                      </div>
+                    </div>
+
+                    {forgotPinWaUrl && (
+                      <div className="pt-1 flex flex-col gap-2">
+                        <a
+                          href={forgotPinWaUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors shadow-sm text-sm"
+                        >
+                          <Phone className="w-4 h-4" />
+                          Buka WhatsApp Pemulihan PIN
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsForgotPin(false);
+                            setForgotPinSuccess('');
+                            setForgotPinWaUrl('');
+                          }}
+                          className="text-xs text-center text-gray-600 hover:text-gray-800 underline mt-1"
+                        >
+                          Sudah terima PIN? Masuk ke Akun
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -277,9 +334,15 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
                     </div>
                   </div>
 
-                  {!isLogin && !isForgotPin && (
+                  {(!isLogin || isForgotPin) && (
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nomor WhatsApp <span className="text-gray-400 font-normal text-xs">(Opsional)</span></label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        {isForgotPin ? (
+                          <>Nomor WhatsApp Terdaftar <span className="text-red-500">*</span></>
+                        ) : (
+                          <>Nomor WhatsApp <span className="text-gray-400 font-normal text-xs">(Opsional)</span></>
+                        )}
+                      </label>
                       <div className="relative">
                         <Phone className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
@@ -287,11 +350,14 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
                           value={whatsappNumber}
                           onChange={(e) => setWhatsappNumber(e.target.value.replace(/[^0-9+]/g, ''))}
                           className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                          placeholder="Contoh: 08123456789"
+                          placeholder={isForgotPin ? "Masukkan nomor WhatsApp terdaftar Anda" : "Contoh: 08123456789"}
+                          required={isForgotPin}
                         />
                       </div>
                       <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
-                        * Disarankan untuk diisi. Nomor ini digunakan untuk pemulihan jika Anda lupa PIN.
+                        {isForgotPin 
+                          ? "* Pemulihan PIN hanya diproses jika Nama dan Nomor WhatsApp cocok dengan data akun."
+                          : "* Disarankan untuk diisi. Nomor ini digunakan untuk pemulihan jika Anda lupa PIN."}
                       </p>
                     </div>
                   )}
