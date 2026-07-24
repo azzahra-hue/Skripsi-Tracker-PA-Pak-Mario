@@ -4,6 +4,7 @@ export interface AppUser {
   uid: string;
   displayName: string;
   photoURL?: string;
+  whatsappNumber?: string;
 }
 
 export interface Proposal {

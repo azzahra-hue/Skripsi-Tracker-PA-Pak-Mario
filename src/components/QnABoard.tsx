@@ -34,15 +34,20 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
   }, []);
 
   useEffect(() => {
-    if (!expandedQId) return;
-
-    const q = query(collection(db, 'answers'), where('questionId', '==', expandedQId), orderBy('createdAt', 'asc'));
+    const q = query(collection(db, 'answers'), orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => doc.data() as Answer);
-      setAnswers(prev => ({ ...prev, [expandedQId]: data }));
+      const answersMap: Record<string, Answer[]> = {};
+      snapshot.docs.forEach((doc) => {
+        const data = doc.data() as Answer;
+        if (!answersMap[data.questionId]) {
+          answersMap[data.questionId] = [];
+        }
+        answersMap[data.questionId].push(data);
+      });
+      setAnswers(answersMap);
     });
     return () => unsubscribe();
-  }, [expandedQId]);
+  }, []);
 
   const handleAskQuestion = async (e: React.FormEvent) => {
     e.preventDefault();

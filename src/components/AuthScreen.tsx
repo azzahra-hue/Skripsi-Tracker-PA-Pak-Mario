@@ -2,7 +2,7 @@ import { useState, FormEvent, ChangeEvent } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { AppUser } from '../types';
-import { Loader2, User as UserIcon, Lock, FileSpreadsheet, ArrowRight, Eye, EyeOff, Camera } from 'lucide-react';
+import { Loader2, User as UserIcon, Lock, FileSpreadsheet, ArrowRight, Eye, EyeOff, Camera, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { resizeProfileImage } from '../lib/imageUtils';
@@ -12,9 +12,13 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [photoURL, setPhotoURL] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const [isForgotPin, setIsForgotPin] = useState(false);
+  const [forgotPinSuccess, setForgotPinSuccess] = useState('');
 
   const handlePhotoChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -58,9 +62,10 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
           name: name.trim(),
           pin: password,
           photoURL: photoURL || '',
+          whatsappNumber: whatsappNumber || '',
           createdAt: Date.now()
         });
-        onSuccess({ uid: normalizedName, displayName: name.trim(), photoURL: photoURL || undefined });
+        onSuccess({ uid: normalizedName, displayName: name.trim(), photoURL: photoURL || undefined, whatsappNumber: whatsappNumber || undefined });
       } else {
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) {
@@ -80,6 +85,48 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
       console.error(err);
       setError('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPinSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setError('Nama harus diisi untuk memulihkan PIN');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setForgotPinSuccess('');
+
+    try {
+      const normalizedName = name.trim().toLowerCase();
+      const userRef = doc(db, 'users', normalizedName);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        setError('Nama tidak ditemukan. Silakan periksa kembali.');
+        setIsLoading(false);
+        return;
+      }
+
+      const userData = userSnap.data();
+      if (!userData.whatsappNumber) {
+        setError('Akun ini belum mendaftarkan nomor WhatsApp. Silakan hubungi Admin untuk reset PIN.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Simulate sending to WA
+      setTimeout(() => {
+        setForgotPinSuccess(`Tautan pemulihan telah disimulasikan ke nomor WhatsApp Anda (${userData.whatsappNumber}). (Simulasi: PIN Anda adalah ${userData.pin})`);
+        setIsLoading(false);
+      }, 1500);
+
+    } catch (err: any) {
+      console.error(err);
+      setError('Terjadi kesalahan saat memulihkan PIN.');
       setIsLoading(false);
     }
   };
@@ -122,34 +169,46 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
         {/* Right Side - Auth Form */}
         <div className="md:w-1/2 p-8 md:p-12 bg-white relative overflow-hidden flex flex-col justify-center">
           <div className="absolute top-8 right-8 flex bg-gray-100 p-1 rounded-lg">
-            <button 
-              onClick={() => { setIsLogin(true); setError(''); }}
-              className={cn("px-4 py-1.5 rounded-md text-sm font-medium transition-all", isLogin ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700")}
-            >
-              Masuk
-            </button>
-            <button 
-              onClick={() => { setIsLogin(false); setError(''); }}
-              className={cn("px-4 py-1.5 rounded-md text-sm font-medium transition-all", !isLogin ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700")}
-            >
-              Daftar
-            </button>
+            {!isForgotPin && (
+              <>
+                <button 
+                  onClick={() => { setIsLogin(true); setError(''); setForgotPinSuccess(''); }}
+                  className={cn("px-4 py-1.5 rounded-md text-sm font-medium transition-all", isLogin ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700")}
+                >
+                  Masuk
+                </button>
+                <button 
+                  onClick={() => { setIsLogin(false); setError(''); setForgotPinSuccess(''); }}
+                  className={cn("px-4 py-1.5 rounded-md text-sm font-medium transition-all", !isLogin ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700")}
+                >
+                  Daftar
+                </button>
+              </>
+            )}
+            {isForgotPin && (
+              <button 
+                onClick={() => { setIsForgotPin(false); setIsLogin(true); setError(''); setForgotPinSuccess(''); }}
+                className="px-4 py-1.5 rounded-md text-sm font-medium transition-all bg-white text-gray-900 shadow-sm"
+              >
+                Kembali
+              </button>
+            )}
           </div>
 
           <div className="mt-12">
             <AnimatePresence mode="wait">
               <motion.div
-                key={isLogin ? 'login' : 'register'}
+                key={isForgotPin ? 'forgot' : (isLogin ? 'login' : 'register')}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
               >
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {isLogin ? 'Selamat Datang Kembali!' : 'Buat Akun Baru'}
+                  {isForgotPin ? 'Lupa PIN?' : (isLogin ? 'Selamat Datang Kembali!' : 'Buat Akun Baru')}
                 </h3>
                 <p className="text-gray-500 mb-8">
-                  {isLogin ? 'Masukkan nama dan PIN untuk melanjutkan.' : 'Daftarkan nama Anda untuk mulai mengelola skripsi.'}
+                  {isForgotPin ? 'Masukkan nama Anda untuk memulihkan PIN via WhatsApp.' : (isLogin ? 'Masukkan nama dan PIN untuk melanjutkan.' : 'Daftarkan nama Anda untuk mulai mengelola skripsi.')}
                 </p>
 
                 {error && (
@@ -159,8 +218,15 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {!isLogin && (
+                {forgotPinSuccess && (
+                  <div className="mb-6 p-3 bg-emerald-50 text-emerald-800 text-sm rounded-lg border border-emerald-200 flex items-start gap-2">
+                    <span className="shrink-0 text-emerald-600 font-bold">✓</span>
+                    <span>{forgotPinSuccess}</span>
+                  </div>
+                )}
+
+                <form onSubmit={isForgotPin ? handleForgotPinSubmit : handleSubmit} className="space-y-5">
+                  {!isLogin && !isForgotPin && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                         Foto Profil <span className="text-gray-400 font-normal text-xs">(Opsional)</span>
@@ -211,30 +277,63 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">PIN (Minimal 6 Angka)</label>
-                    <div className="relative">
-                      <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value.replace(/[^0-9]/g, ''))}
-                        className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                        placeholder="Masukkan 6 digit angka"
-                        required
-                        minLength={6}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                      >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
+                  {!isLogin && !isForgotPin && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nomor WhatsApp <span className="text-gray-400 font-normal text-xs">(Opsional)</span></label>
+                      <div className="relative">
+                        <Phone className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="tel"
+                          value={whatsappNumber}
+                          onChange={(e) => setWhatsappNumber(e.target.value.replace(/[^0-9+]/g, ''))}
+                          className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                          placeholder="Contoh: 08123456789"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                        * Disarankan untuk diisi. Nomor ini digunakan untuk pemulihan jika Anda lupa PIN.
+                      </p>
                     </div>
-                  </div>
+                  )}
+
+                  {!isForgotPin && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">PIN (Minimal 6 Angka)</label>
+                      <div className="relative">
+                        <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value.replace(/[^0-9]/g, ''))}
+                          className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                          placeholder="Masukkan 6 digit angka"
+                          required
+                          minLength={6}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        >
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                      
+                      {isLogin && (
+                        <div className="mt-2 text-right">
+                          <button
+                            type="button"
+                            onClick={() => { setIsForgotPin(true); setError(''); setForgotPinSuccess(''); }}
+                            className="text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors"
+                          >
+                            Lupa PIN?
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <button
                     type="submit"
@@ -242,7 +341,7 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
                     className="w-full flex items-center justify-center gap-2 py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors disabled:opacity-70 mt-2 shadow-sm shadow-orange-200"
                   >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-                    {isLogin ? 'Masuk' : 'Buat Akun'}
+                    {isForgotPin ? 'Pulihkan PIN' : (isLogin ? 'Masuk' : 'Buat Akun')}
                   </button>
                 </form>
               </motion.div>

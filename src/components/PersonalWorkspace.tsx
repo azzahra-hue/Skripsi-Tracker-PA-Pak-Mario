@@ -285,6 +285,7 @@ export function PersonalWorkspace({ currentUser, onRequireAuth }: PersonalWorksp
         updatedAt: Date.now()
       });
       setEditingChapter(null);
+      showMotivationPopup();
     } catch (err) {
       console.error('Error updating chapter:', err);
       alert('Gagal memperbarui target bab.');
@@ -385,6 +386,7 @@ export function PersonalWorkspace({ currentUser, onRequireAuth }: PersonalWorksp
         notes: editingMentoring.notes || ''
       });
       setEditingMentoring(null);
+      showMotivationPopup();
     } catch (err) {
       console.error('Error updating mentoring target:', err);
       alert('Gagal memperbarui target bimbingan.');
@@ -394,6 +396,7 @@ export function PersonalWorkspace({ currentUser, onRequireAuth }: PersonalWorksp
   const handleUpdateMentoringStatus = async (id: string, status: 'Terjadwal' | 'Selesai' | 'Perlu Revisi') => {
     try {
       await updateDoc(doc(db, 'mentoring_targets', id), { status });
+      showMotivationPopup();
     } catch (err) {
       console.error('Error updating mentoring status:', err);
     }
@@ -442,6 +445,7 @@ export function PersonalWorkspace({ currentUser, onRequireAuth }: PersonalWorksp
         notes: editingLog.notes || ''
       });
       setEditingLog(null);
+      showMotivationPopup();
     } catch (err) {
       console.error('Error updating progress log:', err);
       alert('Gagal memperbarui log progress.');
