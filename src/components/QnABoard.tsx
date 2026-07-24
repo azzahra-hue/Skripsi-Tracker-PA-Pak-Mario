@@ -55,16 +55,19 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
     setIsSubmitting(true);
     try {
       const id = crypto.randomUUID();
-      const newQuestion: Question = {
+      const newQuestion: Partial<Question> = {
         id,
         text: questionText.trim(),
         author: isAnonymous ? 'Anonim' : (currentUser.displayName || 'Anonim'),
         authorId: currentUser.uid,
-        authorPhoto: isAnonymous ? undefined : currentUser.photoURL,
         createdAt: Date.now(),
       };
 
-      await setDoc(doc(db, 'questions', id), newQuestion);
+      if (!isAnonymous && currentUser.photoURL) {
+        newQuestion.authorPhoto = currentUser.photoURL;
+      }
+
+      await setDoc(doc(db, 'questions', id), newQuestion as Question);
       setQuestionText('');
       setIsAnonymous(false);
       setIsComposing(false);
@@ -87,17 +90,20 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
     setIsAnswering(true);
     try {
       const id = crypto.randomUUID();
-      const newAnswer: Answer = {
+      const newAnswer: Partial<Answer> = {
         id,
         questionId,
         text: answerText.trim(),
         author: isAnswerAnonymous ? 'Anonim' : (currentUser.displayName || 'Anonim'),
         authorId: currentUser.uid,
-        authorPhoto: isAnswerAnonymous ? undefined : currentUser.photoURL,
         createdAt: Date.now(),
       };
 
-      await setDoc(doc(db, 'answers', id), newAnswer);
+      if (!isAnswerAnonymous && currentUser.photoURL) {
+        newAnswer.authorPhoto = currentUser.photoURL;
+      }
+
+      await setDoc(doc(db, 'answers', id), newAnswer as Answer);
       setAnswerText('');
       setIsAnswerAnonymous(false);
     } catch (error) {

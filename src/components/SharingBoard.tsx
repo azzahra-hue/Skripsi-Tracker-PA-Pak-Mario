@@ -71,9 +71,12 @@ export function SharingBoard({ currentUser, onRequireAuth }: SharingBoardProps) 
         text: text.trim(),
         author: isAnonymous ? 'Anonim' : (currentUser.displayName || 'Anonim'),
         authorId: currentUser.uid,
-        authorPhoto: isAnonymous ? undefined : currentUser.photoURL,
         createdAt: Date.now(),
       };
+
+      if (!isAnonymous && currentUser.photoURL) {
+        newNote.authorPhoto = currentUser.photoURL;
+      }
 
       if (file) {
         newNote.fileName = file.name;
