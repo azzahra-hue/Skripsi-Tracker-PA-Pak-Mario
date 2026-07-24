@@ -69,11 +69,16 @@ export function ProposalModal({ proposal, isOpen, onClose, currentUser, isNew = 
           mentoringPlan: formData.mentoringPlan || '',
           ownerId: currentUser.uid,
           ownerName: currentUser.displayName || 'Unknown',
+          ownerPhoto: currentUser.photoURL,
           createdAt: Date.now(),
         };
         await setDoc(doc(db, 'proposals', id), newProposal);
       } else if (proposal) {
-        await updateDoc(doc(db, 'proposals', proposal.id), formData);
+        const updateData = { ...formData };
+        if (currentUser.photoURL) {
+          updateData.ownerPhoto = currentUser.photoURL;
+        }
+        await updateDoc(doc(db, 'proposals', proposal.id), updateData);
       }
       onClose();
       onSaveSuccess?.();

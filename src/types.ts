@@ -18,6 +18,7 @@ export interface Proposal {
   mentoringPlan: string;
   ownerId: string;
   ownerName: string;
+  ownerPhoto?: string;
   createdAt: number;
 }
 

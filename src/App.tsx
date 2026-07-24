@@ -263,7 +263,20 @@ export default function App() {
                       filteredProposals.map((proposal) => (
                         <tr key={proposal.id} className="hover:bg-gray-50 transition-colors group">
                           <td className="px-6 py-4">
-                            <p className="font-semibold text-gray-900">{proposal.name}</p>
+                            <div className="flex items-center gap-3">
+                              {proposal.ownerPhoto ? (
+                                <img
+                                  src={proposal.ownerPhoto}
+                                  alt={proposal.name}
+                                  className="w-8 h-8 rounded-full object-cover border border-orange-200 shadow-sm shrink-0"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs shrink-0 shadow-sm">
+                                  {proposal.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <p className="font-semibold text-gray-900">{proposal.name}</p>
+                            </div>
                           </td>
                           <td className="px-6 py-4">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
