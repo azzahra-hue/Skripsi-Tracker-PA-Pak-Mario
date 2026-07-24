@@ -4,6 +4,7 @@ import { db } from './lib/firebase';
 import { AppUser, Proposal, Status } from './types';
 import { AuthButton } from './components/AuthButton';
 import { AuthModal } from './components/AuthModal';
+import { ProfileModal } from './components/ProfileModal';
 import { AuthScreen } from './components/AuthScreen';
 import { ProposalModal } from './components/ProposalModal';
 import { StatusBadge } from './components/StatusBadge';
@@ -37,6 +38,7 @@ export default function App() {
   const [isNewProposal, setIsNewProposal] = useState(false);
   
   const [authModal, setAuthModal] = useState<{isOpen: boolean, mode: 'login' | 'register', name: string}>({isOpen: false, mode: 'login', name: ''});
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [mainTab, setMainTab] = useState<'public' | 'personal'>('public');
 
   const [showMotivation, setShowMotivation] = useState(false);
@@ -164,7 +166,12 @@ export default function App() {
             </nav>
           </div>
 
-          <AuthButton user={user} onLoginClick={() => setAuthModal({isOpen: true, mode: 'login', name: ''})} onLogout={handleLogout} />
+          <AuthButton 
+            user={user} 
+            onLoginClick={() => setAuthModal({isOpen: true, mode: 'login', name: ''})} 
+            onLogout={handleLogout} 
+            onEditProfile={() => setIsProfileModalOpen(true)}
+          />
         </div>
       </header>
 
@@ -318,6 +325,14 @@ export default function App() {
         initialName={authModal.name}
         onSuccess={handleAuthSuccess}
       />
+      {user && (
+        <ProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          currentUser={user}
+          onUpdateUser={handleAuthSuccess}
+        />
+      )}
 
       <AnimatePresence>
         {showMotivation && (

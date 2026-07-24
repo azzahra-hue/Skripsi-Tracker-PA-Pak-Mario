@@ -455,6 +455,13 @@ export function PersonalWorkspace({ currentUser, onRequireAuth }: PersonalWorksp
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
+              {currentUser.photoURL ? (
+                <img
+                  src={currentUser.photoURL}
+                  alt={currentUser.displayName}
+                  className="w-7 h-7 rounded-full object-cover border border-orange-300 shadow-sm"
+                />
+              ) : null}
               <span className="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
                 <UserCheck className="w-3.5 h-3.5" /> Workspace {currentUser.displayName}
               </span>

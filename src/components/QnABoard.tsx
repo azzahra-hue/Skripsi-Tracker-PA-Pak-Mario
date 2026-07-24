@@ -60,6 +60,7 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
         text: questionText.trim(),
         author: isAnonymous ? 'Anonim' : (currentUser.displayName || 'Anonim'),
         authorId: currentUser.uid,
+        authorPhoto: isAnonymous ? undefined : currentUser.photoURL,
         createdAt: Date.now(),
       };
 
@@ -92,6 +93,7 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
         text: answerText.trim(),
         author: isAnswerAnonymous ? 'Anonim' : (currentUser.displayName || 'Anonim'),
         authorId: currentUser.uid,
+        authorPhoto: isAnswerAnonymous ? undefined : currentUser.photoURL,
         createdAt: Date.now(),
       };
 
@@ -165,9 +167,17 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm", q.author === 'Anonim' ? 'bg-gray-400' : 'bg-orange-500')}>
-                        {q.author === 'Anonim' ? <UserIcon className="w-4 h-4" /> : q.author.charAt(0).toUpperCase()}
-                      </div>
+                      {q.author === 'Anonim' || !q.authorPhoto ? (
+                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm overflow-hidden", q.author === 'Anonim' ? 'bg-gray-400' : 'bg-orange-500')}>
+                          {q.author === 'Anonim' ? <UserIcon className="w-4 h-4" /> : q.author.charAt(0).toUpperCase()}
+                        </div>
+                      ) : (
+                        <img
+                          src={q.authorPhoto}
+                          alt={q.author}
+                          className="w-8 h-8 rounded-full object-cover border border-orange-200 shadow-sm shrink-0"
+                        />
+                      )}
                       <div>
                         <p className="text-sm font-bold text-gray-800">{q.author}</p>
                         <p className="text-xs text-gray-500">
@@ -207,9 +217,17 @@ export function QnABoard({ currentUser, onRequireAuth }: QnABoardProps) {
                       <div className="p-4 space-y-4">
                         {qAnswers.map((ans) => (
                           <div key={ans.id} className="flex items-start gap-3">
-                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 mt-1 shadow-sm", ans.author === 'Anonim' ? 'bg-gray-400' : 'bg-orange-400')}>
-                              {ans.author === 'Anonim' ? <UserIcon className="w-3 h-3" /> : ans.author.charAt(0).toUpperCase()}
-                            </div>
+                            {ans.author === 'Anonim' || !ans.authorPhoto ? (
+                              <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 mt-1 shadow-sm overflow-hidden", ans.author === 'Anonim' ? 'bg-gray-400' : 'bg-orange-400')}>
+                                {ans.author === 'Anonim' ? <UserIcon className="w-3 h-3" /> : ans.author.charAt(0).toUpperCase()}
+                              </div>
+                            ) : (
+                              <img
+                                src={ans.authorPhoto}
+                                alt={ans.author}
+                                className="w-6 h-6 rounded-full object-cover border border-orange-200 shadow-sm shrink-0 mt-1"
+                              />
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-2 mb-1">
                                 <p className="text-xs font-bold text-gray-800 truncate">{ans.author}</p>

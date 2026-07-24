@@ -1,8 +1,9 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { AppUser } from '../types';
-import { X, Loader2, User as UserIcon, Lock, Eye, EyeOff } from 'lucide-react';
+import { X, Loader2, User as UserIcon, Lock, Eye, EyeOff, Camera } from 'lucide-react';
+import { resizeProfileImage } from '../lib/imageUtils';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', initialName 
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [name, setName] = useState(initialName);
   const [password, setPassword] = useState('');
+  const [photoURL, setPhotoURL] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,11 +27,24 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', initialName 
       setMode(initialMode);
       setName(initialName);
       setPassword('');
+      setPhotoURL('');
       setError('');
     }
   }, [isOpen, initialMode, initialName]);
 
   if (!isOpen) return null;
+
+  const handlePhotoChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      try {
+        const resized = await resizeProfileImage(e.target.files[0], 250);
+        setPhotoURL(resized);
+      } catch (err) {
+        console.error('Failed resizing photo:', err);
+        setError('Gagal memproses gambar foto profil.');
+      }
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -60,9 +75,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', initialName 
         await setDoc(userRef, {
           name: name.trim(),
           pin: password,
+          photoURL: photoURL || '',
           createdAt: Date.now()
         });
-        onSuccess({ uid: normalizedName, displayName: name.trim() });
+        onSuccess({ uid: normalizedName, displayName: name.trim(), photoURL: photoURL || undefined });
         onClose();
       } else {
         const userSnap = await getDoc(userRef);
@@ -77,7 +93,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', initialName 
           setIsLoading(false);
           return;
         }
-        onSuccess({ uid: normalizedName, displayName: userData.name });
+        onSuccess({ uid: normalizedName, displayName: userData.name, photoURL: userData.photoURL || undefined });
         onClose();
       }
     } catch (err: any) {
@@ -111,6 +127,42 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', initialName 
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === 'register' && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Foto Profil <span className="text-gray-400 font-normal text-xs">(Opsional)</span>
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="relative w-12 h-12 rounded-full bg-orange-100 border border-orange-200 overflow-hidden shrink-0 flex items-center justify-center">
+                    {photoURL ? (
+                      <img src={photoURL} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <UserIcon className="w-6 h-6 text-orange-500" />
+                    )}
+                  </div>
+                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition-colors border border-gray-200">
+                    <Camera className="w-3.5 h-3.5 text-gray-500" />
+                    {photoURL ? 'Ganti Foto' : 'Pilih Foto'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="hidden"
+                    />
+                  </label>
+                  {photoURL && (
+                    <button
+                      type="button"
+                      onClick={() => setPhotoURL('')}
+                      className="text-xs text-red-500 hover:underline"
+                    >
+                      Hapus
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Nama Pengguna</label>
               <div className="relative">

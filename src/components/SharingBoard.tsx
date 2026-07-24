@@ -71,6 +71,7 @@ export function SharingBoard({ currentUser, onRequireAuth }: SharingBoardProps) 
         text: text.trim(),
         author: isAnonymous ? 'Anonim' : (currentUser.displayName || 'Anonim'),
         authorId: currentUser.uid,
+        authorPhoto: isAnonymous ? undefined : currentUser.photoURL,
         createdAt: Date.now(),
       };
 
@@ -143,9 +144,17 @@ export function SharingBoard({ currentUser, onRequireAuth }: SharingBoardProps) 
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm", note.author === 'Anonim' ? 'bg-gray-400' : 'bg-orange-500')}>
-                    {note.author === 'Anonim' ? <UserIcon className="w-4 h-4" /> : note.author.charAt(0).toUpperCase()}
-                  </div>
+                  {note.author === 'Anonim' || !note.authorPhoto ? (
+                    <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm overflow-hidden", note.author === 'Anonim' ? 'bg-gray-400' : 'bg-orange-500')}>
+                      {note.author === 'Anonim' ? <UserIcon className="w-4 h-4" /> : note.author.charAt(0).toUpperCase()}
+                    </div>
+                  ) : (
+                    <img
+                      src={note.authorPhoto}
+                      alt={note.author}
+                      className="w-8 h-8 rounded-full object-cover border border-orange-200 shadow-sm shrink-0"
+                    />
+                  )}
                   <div>
                     <p className="text-sm font-bold text-gray-800">{note.author}</p>
                     <p className="text-xs text-gray-500">

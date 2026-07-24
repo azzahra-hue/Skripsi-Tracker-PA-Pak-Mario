@@ -1,18 +1,32 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, ChangeEvent } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { AppUser } from '../types';
-import { Loader2, User as UserIcon, Lock, FileSpreadsheet, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Loader2, User as UserIcon, Lock, FileSpreadsheet, ArrowRight, Eye, EyeOff, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { resizeProfileImage } from '../lib/imageUtils';
 
 export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) => void, onGuest: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [photoURL, setPhotoURL] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handlePhotoChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      try {
+        const resized = await resizeProfileImage(e.target.files[0], 250);
+        setPhotoURL(resized);
+      } catch (err) {
+        console.error('Failed resizing photo:', err);
+        setError('Gagal memproses gambar foto profil.');
+      }
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -43,9 +57,10 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
         await setDoc(userRef, {
           name: name.trim(),
           pin: password,
+          photoURL: photoURL || '',
           createdAt: Date.now()
         });
-        onSuccess({ uid: normalizedName, displayName: name.trim() });
+        onSuccess({ uid: normalizedName, displayName: name.trim(), photoURL: photoURL || undefined });
       } else {
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) {
@@ -59,7 +74,7 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
           setIsLoading(false);
           return;
         }
-        onSuccess({ uid: normalizedName, displayName: userData.name });
+        onSuccess({ uid: normalizedName, displayName: userData.name, photoURL: userData.photoURL || undefined });
       }
     } catch (err: any) {
       console.error(err);
@@ -145,6 +160,42 @@ export function AuthScreen({ onSuccess, onGuest }: { onSuccess: (user: AppUser) 
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {!isLogin && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        Foto Profil <span className="text-gray-400 font-normal text-xs">(Opsional)</span>
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-12 h-12 rounded-full bg-orange-100 border border-orange-200 overflow-hidden shrink-0 flex items-center justify-center shadow-sm">
+                          {photoURL ? (
+                            <img src={photoURL} alt="Preview" className="w-full h-full object-cover" />
+                          ) : (
+                            <UserIcon className="w-6 h-6 text-orange-500" />
+                          )}
+                        </div>
+                        <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition-colors border border-gray-200">
+                          <Camera className="w-3.5 h-3.5 text-gray-500" />
+                          {photoURL ? 'Ganti Foto' : 'Pilih Foto'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePhotoChange}
+                            className="hidden"
+                          />
+                        </label>
+                        {photoURL && (
+                          <button
+                            type="button"
+                            onClick={() => setPhotoURL('')}
+                            className="text-xs text-red-500 hover:underline"
+                          >
+                            Hapus
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap</label>
                     <div className="relative">

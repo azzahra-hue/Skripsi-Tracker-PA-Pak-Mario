@@ -3,6 +3,7 @@ export type Status = 'To-Do' | 'On Progress' | 'Revisi' | 'Done';
 export interface AppUser {
   uid: string;
   displayName: string;
+  photoURL?: string;
 }
 
 export interface Proposal {
@@ -25,6 +26,7 @@ export interface Note {
   text: string;
   author: string;
   authorId: string;
+  authorPhoto?: string;
   createdAt: number;
   fileName?: string;
   fileType?: string;
@@ -36,6 +38,7 @@ export interface Question {
   text: string;
   author: string;
   authorId: string;
+  authorPhoto?: string;
   createdAt: number;
 }
 
@@ -45,6 +48,7 @@ export interface Answer {
   text: string;
   author: string;
   authorId: string;
+  authorPhoto?: string;
   createdAt: number;
 }
 
