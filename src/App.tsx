@@ -30,6 +30,7 @@ export default function App() {
   const [isGuest, setIsGuest] = useState(false);
 
   const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [userProfiles, setUserProfiles] = useState<Record<string, { photoURL?: string }>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'progress'>('name');
   
@@ -65,12 +66,24 @@ export default function App() {
   };
 
   useEffect(() => {
-    const q = query(collection(db, 'proposals'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const qProposals = query(collection(db, 'proposals'), orderBy('createdAt', 'desc'));
+    const unsubscribeProposals = onSnapshot(qProposals, (snapshot) => {
       const data = snapshot.docs.map(doc => doc.data() as Proposal);
       setProposals(data);
     });
-    return () => unsubscribe();
+
+    const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
+      const profiles: Record<string, { photoURL?: string }> = {};
+      snapshot.docs.forEach(doc => {
+        profiles[doc.id] = { photoURL: doc.data().photoURL };
+      });
+      setUserProfiles(profiles);
+    });
+
+    return () => {
+      unsubscribeProposals();
+      unsubscribeUsers();
+    };
   }, []);
 
   if (!user && !isGuest) {
@@ -264,9 +277,9 @@ export default function App() {
                         <tr key={proposal.id} className="hover:bg-gray-50 transition-colors group">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              {proposal.ownerPhoto ? (
+                              {(userProfiles[proposal.ownerId]?.photoURL || proposal.ownerPhoto) ? (
                                 <img
-                                  src={proposal.ownerPhoto}
+                                  src={userProfiles[proposal.ownerId]?.photoURL || proposal.ownerPhoto}
                                   alt={proposal.name}
                                   className="w-8 h-8 rounded-full object-cover border border-orange-200 shadow-sm shrink-0"
                                 />
